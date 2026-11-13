@@ -1,0 +1,65 @@
+name: Build Binaries
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pyinstaller
+      - name: Run Tests
+        run: |
+          python -m unittest discover -s save_editor/tests -v
+          python -m unittest patcher/test_patcher.py -v
+      - name: Build Patcher (Linux)
+        run: |
+          cd patcher
+          pyinstaller --noconfirm --clean --onefile --windowed \
+            --name "BreathOfFireIV_PTBR_Patcher-Linux" \
+            --add-data "translation_data.pkg:." \
+            gui_patcher.py
+      - name: Build Save Editor (Linux)
+        run: |
+          cd save_editor
+          pyinstaller --noconfirm --clean --onefile --windowed \
+            --name "BreathOfFireIVSaveEditor-Linux" \
+            run_gui.py
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+      - name: Build Patcher (Windows)
+        run: |
+          cd patcher
+          pyinstaller --noconfirm --clean --onefile --windowed `
+            --name "BreathOfFireIV_PTBR_Patcher" `
+            --add-data "translation_data.pkg;." `
+            gui_patcher.py
+      - name: Build Save Editor (Windows)
+        run: |
+          cd save_editor
+          pyinstaller --noconfirm --clean --onefile --windowed `
+            --name "BreathOfFireIVSaveEditor" `
+            run_gui.py
