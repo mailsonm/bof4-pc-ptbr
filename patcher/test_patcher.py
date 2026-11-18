@@ -3,8 +3,14 @@
 
 import os
 import shutil
+import sys
 import tempfile
 import unittest
+
+PATCHER_DIR = os.path.dirname(os.path.abspath(__file__))
+if PATCHER_DIR not in sys.path:
+    sys.path.insert(0, PATCHER_DIR)
+
 from patcher import BoF4Patcher
 
 
@@ -20,7 +26,7 @@ class TestBoF4Patcher(unittest.TestCase):
         with open(os.path.join(self.dat_dir, "INIT.DAT"), "wb") as f:
             f.write(b"INIT_DUMMY")
 
-        self.pkg_path = "/home/mailson/.gemini/antigravity/scratch/bof4-nexus-mod/translation_data.pkg"
+        self.pkg_path = os.path.join(PATCHER_DIR, "translation_data.pkg")
         self.patcher = BoF4Patcher(self.test_dir, pkg_path=self.pkg_path)
 
     def tearDown(self):

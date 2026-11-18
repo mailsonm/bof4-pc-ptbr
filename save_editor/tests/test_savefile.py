@@ -2,12 +2,48 @@
 
 import os
 import shutil
+import sys
 import tempfile
 import unittest
 
-from bof4_save import SaveFile, MAX_ZENNY, MAX_GP, MAX_LEVEL, MAX_HP, MAX_AP, MAX_STAT
+SAVE_EDITOR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if SAVE_EDITOR_DIR not in sys.path:
+    sys.path.insert(0, SAVE_EDITOR_DIR)
 
-REAL_SAVE_PATH = "/home/mailson/Games/breath-of-fire-iv/drive_c/GOG Games/Breath of Fire IV/SAV/01.DAT"
+from bof4_save import (
+    SaveFile,
+    EXPECTED_SAVE_SIZE,
+    MAX_ZENNY,
+    MAX_GP,
+    MAX_LEVEL,
+    MAX_HP,
+    MAX_AP,
+    MAX_STAT,
+)
+
+
+def _create_sample_save_bytes() -> bytearray:
+    """Builds a valid synthetic Breath of Fire IV save buffer for unit tests."""
+    save = SaveFile(data=bytearray(EXPECTED_SAVE_SIZE))
+    save.zenny = 335
+    save.gp = 1971
+
+    ryu = save.get_character(0)
+    ryu.name = "Ryu"
+    ryu.level = 5
+    ryu.exp = 135
+    ryu.current_hp = 189
+    ryu.total_max_hp = 346
+
+    save.fishing.set_fish_length(0, 29)
+    save.fishing.set_fish_points(0, 72)
+    save.fishing.set_fish_points(1, 260)  # Total = 332
+
+    save.inventory.set_slot(0, 0, 1, 5)
+    save.inventory.set_slot(0, 1, 2, 35)
+
+    save.update_checksum()
+    return save.data
 
 
 class TestBoF4SaveFile(unittest.TestCase):
@@ -15,7 +51,8 @@ class TestBoF4SaveFile(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
         self.temp_save = os.path.join(self.temp_dir, "01.DAT")
-        shutil.copy2(REAL_SAVE_PATH, self.temp_save)
+        with open(self.temp_save, "wb") as f:
+            f.write(_create_sample_save_bytes())
         self.save = SaveFile(self.temp_save)
 
     def tearDown(self):
