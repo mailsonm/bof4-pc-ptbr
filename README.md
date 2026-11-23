@@ -50,7 +50,7 @@ cd patcher
 ```cmd
 pyinstaller --noconfirm --clean --onefile --windowed ^
   --name "BreathOfFireIV_PTBR_Patcher" ^
-  --add-data "translation_data.pkg;." ^
+  --add-data "translation_v2.pkg;." ^
   gui_patcher.py
 ```
 
@@ -58,7 +58,7 @@ pyinstaller --noconfirm --clean --onefile --windowed ^
 ```bash
 pyinstaller --noconfirm --clean --onefile --windowed \
   --name "BreathOfFireIV_PTBR_Patcher-Linux" \
-  --add-data "translation_data.pkg:." \
+  --add-data "translation_v2.pkg:." \
   gui_patcher.py
 ```
 
@@ -108,8 +108,18 @@ python3 save_editor/run_gui.py
 
 # Run Unit Tests
 python3 -m unittest discover -s save_editor/tests -v
+python3 -m unittest discover -s tests -v
 python3 -m unittest patcher/test_patcher.py -v
 ```
+
+---
+
+## ✨ What's New in v2.0.0 (Native PC Localization)
+
+- **100% Native PC PT-BR Translation:** Re-translated completely from scratch directly from the clean PC English corpus (`7,402` strings across `305` `.DAT` files: all story dialogues, battle tutorials/hints, Bestiary/Peep descriptions, all `567` item/equipment/skill descriptions, Camp/Shop/Manillo/Fishing/Faerie/Save menus, and Chapter Titles).
+- **Native Portuguese Accented Fonts & VWF:** Synthesized `26` crisp 4bpp accented glyphs (`á à â ã é ê í ó ô õ ú ç Á À Â Ã É Ê Í Ó Ô Õ Ú Ç º ª` at `0x88..0xA1`) in both `16×16` (`INIT.DAT[8]`) and `24×24` (`INIT.DAT[9]`), with exact VWF advance-width & left-bearing metrics patched into `BOF4.exe`.
+- **Reversible `BOF4.exe` Micro-Patch:** Updates Title Menu (`NOVO JOGO`, `CARREGAR`, `OPÇÕES`), Minigame HUD (`MELHOR`, `NOVO RECORDE`), Compass (`L`/`O`), and VWF tables with valid PE CheckSum and automatic `BOF4.exe.bak` backup/restore.
+- **English Proper Names Preserved:** Keeps original English names for items, consumables, fish, rods, lures, weapons, armor, accessories, key items (`INIT.DAT[7]` untouched), spells/skills/Wills, monsters, characters, and locations.
 
 ---
 
@@ -119,10 +129,20 @@ python3 -m unittest patcher/test_patcher.py -v
 bof4-pc-ptbr/
 ├── .github/workflows/
 │   └── build.yml               # Automated GitHub Actions CI workflow
+├── bof4_ptbr/
+│   ├── GLOSSARY.md             # PT-BR localization glossary & style guide
+│   ├── codec.py                # Control-code-aware text codec & VWF metrics
+│   ├── validate.py             # VWF pixel-width & structural tag validator
+│   ├── font_builder.py         # 16x16 / 24x24 4bpp PT-BR glyph synthesizer
+│   ├── exe_patcher.py          # BOF4.exe VWF & UI micro-patcher + PE CheckSum
+│   ├── dat_engine.py           # Strict (type_param, dest) .DAT parser/writer
+│   ├── extract_corpus.py       # Deduplicated 8-shard corpus extractor
+│   ├── build_patch.py          # v2.0.0 package compiler & CLI installer
+│   └── corpus/                 # 8 validated PT-BR translation shards
 ├── patcher/
-│   ├── patcher.py              # Core DAT injection and pointer calculation engine
+│   ├── patcher.py              # Standalone v2.0.0 DAT + EXE patcher & restorer
 │   ├── gui_patcher.py          # Tkinter graphical user interface
-│   ├── translation_data.pkg    # Compressed translation dictionary (424 KB)
+│   ├── translation_v2.pkg      # Compressed v2.0.0 translation bundle (253 KB)
 │   └── test_patcher.py         # Patcher test suite
 ├── save_editor/
 │   ├── bof4_save/              # Save file parser & 8-bit XOR checksum engine
@@ -130,8 +150,7 @@ bof4-pc-ptbr/
 │   ├── run_gui.py              # Save Editor GUI entry point
 │   ├── cli.py                  # Command-line interface
 │   └── tests/                  # Save Editor test suite
-├── tools/
-│   └── port_translation.py     # Reverse engineering & PS1-to-PC extraction script
+├── tests/                      # Full codec, font, EXE & DAT engine test suite
 └── README.md                   # This documentation
 ```
 
@@ -139,20 +158,23 @@ bof4-pc-ptbr/
 
 ## 🇧🇷 Português (PT-BR)
 
-### Sobre o Projeto
-Este repositório contém as ferramentas completas e de código aberto utilizadas para a tradução em Português do Brasil e edição de saves de **Breath of Fire IV (PC)** (GOG e Steam):
+### Sobre o Projeto (v2.0.0)
+Este repositório contém o código-fonte completo e auditável da **tradução nativa v2.0.0 em Português do Brasil** e do editor de saves para **Breath of Fire IV (PC)** (GOG e Steam):
 
-1. **Patcher de Tradução (`patcher/`):** Utilitário gráfico que injeta mais de 370 mapas de diálogos e o catálogo `INIT.DAT`, recalculando tabelas de ponteiros com segurança e criando backup automático em `DAT_BACKUP_EN`.
-2. **Editor de Saves (`save_editor/`):** Utilitário gráfico para editar Zenny, pontos de pesca, atributos dos personagens e inventário, com recálculo automático de checksum 8-bit XOR.
-3. **Compilação Aberta:** Ambos os programas podem ser executados diretamente em Python ou compilados via PyInstaller seguindo os comandos da seção [Building from Source](#-how-to-build-from-source-step-by-step).
+1. **Tradução Nativa Completa (`bof4_ptbr/`):** Todos os diálogos de história, menus, lojas, pesca, colônia das fadas, tutoriais de batalha e `567` descrições de itens/equipamentos/magias foram traduzidos do zero para o PC, preservando nomes originais em inglês de itens, equipamentos, magias, monstros e locais.
+2. **Fontes Acentuadas & VWF:** Adição de `26` glifos nativos (`á à â ã é ê í ó ô õ ú ç Á À Â Ã É Ê Í Ó Ô Õ Ú Ç º ª`) em `16×16` e `24×24` (`INIT.DAT[8..9]`) e tabelas de largura variável (VWF) + menus do título no `BOF4.exe`, sem corromper retratos ou caixas de diálogo.
+3. **Patcher v2.0.0 (`patcher/`):** Utilitário gráfico com backup automático em `DAT_BACKUP_EN/` e `BOF4.exe.bak` e restauração 1-clique para o inglês original.
+4. **Editor de Saves (`save_editor/`):** Utilitário gráfico para editar Zenny, pontos de pesca, atributos e inventário com recálculo de checksum 8-bit XOR.
+5. **Compilação Aberta:** Ambos os programas podem ser executados diretamente em Python ou compilados via PyInstaller seguindo os comandos da seção [Building from Source](#-how-to-build-from-source-step-by-step).
 
 ---
 
 ## 🇪🇸 Español
 
-### Sobre el Proyecto
-Este repositorio contiene el código fuente abierto de las herramientas de traducción al portugués brasileño y editor de partidas guardadas para **Breath of Fire IV (PC)** (GOG y Steam):
-- **Parcheador (`patcher/`):** Inserta los textos traducidos en los archivos `.DAT` del juego y recalcula los punteros binarios con copia de seguridad automática.
+### Sobre el Proyecto (v2.0.0)
+Este repositorio contiene el código fuente abierto de la **traducción nativa v2.0.0 al portugués brasileño** y editor de partidas guardadas para **Breath of Fire IV (PC)** (GOG y Steam):
+- **Traducción Nativa (`bof4_ptbr/`):** Diálogos, menús, tutoriales y descripciones traducidos desde cero para PC con fuentes 4bpp acentuadas (`16×16` y `24×24`) y ajuste VWF en `BOF4.exe`.
+- **Parcheador (`patcher/`):** Aplica los `.DAT` y el microparche reversible de `BOF4.exe` con copia de seguridad automática (`DAT_BACKUP_EN` y `BOF4.exe.bak`).
 - **Editor de Partidas (`save_editor/`):** Modifica Zenny, pesca y atributos con recálculo automático de checksum 8-bit XOR.
 - **Transparencia:** Todo el código es auditable y reproducible mediante PyInstaller.
 
@@ -160,8 +182,7 @@ Este repositorio contiene el código fuente abierto de las herramientas de tradu
 
 ## 🎖️ Credits & Acknowledgements
 
-- **Original PS1 Translation:** **nhojunior** and the original localization team (v1.1a).
-- **Reverse Engineering, PC Port & Tooling:** **Mailson Maia Alves** ([mailsonm](https://github.com/mailsonm)).
+- **Native PC Reverse Engineering, From-Scratch PT-BR Localization, Font/EXE Patching, Patcher & Save Editor:** **Mailson Maia Alves** ([mailsonm](https://github.com/mailsonm)).
 - **Original Game & Publishing:** **CAPCOM Co., Ltd.** & **GOG.com**.
 - **Community:** Breath of Fire fans & Nexus Mods.
 
