@@ -166,7 +166,7 @@ class BoF4PatcherGUI(tk.Tk):
 
         credits_lbl = ttk.Label(
             footer,
-            text="Tradução PS1: nhojunior • Port PC & Ferramentas: Mailson Maia Alves",
+            text="Tradução Nativa PC PT-BR (v2.0.0) • Mailson Maia Alves",
             style="Subtitle.TLabel",
         )
         credits_lbl.pack(side="left")
@@ -214,7 +214,7 @@ class BoF4PatcherGUI(tk.Tk):
 
         if is_patched:
             self.patch_status_lbl.config(
-                text="Idioma Atual: Português (PT-BR) [Patch Ativo]", foreground="#4dd0e1"
+                text=f"Idioma Atual: Português (PT-BR Nativo v{VERSION}) [Patch Ativo]", foreground="#4dd0e1"
             )
             self.patch_btn.config(text="✨ Reinstalar Tradução PT-BR", state="normal")
             self.restore_btn.config(state="normal" if has_backup else "disabled")
@@ -242,12 +242,22 @@ class BoF4PatcherGUI(tk.Tk):
         def run():
             try:
                 count, errors = self.patcher.apply_patch(self.progress_callback)
-                self.progress_lbl.config(text="Concluído com sucesso!")
-                self.progress_bar["value"] = 100
-                messagebox.showinfo(
-                    "Sucesso!",
-                    f"Tradução aplicada com sucesso!\n\n{count} arquivos foram atualizados para PT-BR.\nUm backup dos arquivos originais em inglês foi salvo com segurança em 'DAT_BACKUP_EN'.\n\nBom jogo!",
-                )
+                if errors:
+                    self.progress_lbl.config(text="Concluído com avisos/erros.")
+                    messagebox.showerror(
+                        "Erro parcial ao aplicar patch",
+                        f"{count} arquivos atualizados, mas ocorreram {len(errors)} erro(s):\n\n"
+                        + "\n".join(errors[:10]),
+                    )
+                else:
+                    self.progress_lbl.config(text="Concluído com sucesso!")
+                    self.progress_bar["value"] = 100
+                    messagebox.showinfo(
+                        "Sucesso!",
+                        f"Tradução PT-BR v{VERSION} aplicada com sucesso!\n\n"
+                        f"{count} arquivos atualizados (DATs, fontes acentuadas 16px/24px e BOF4.exe).\n"
+                        "Backups originais salvos em 'DAT_BACKUP_EN' e 'BOF4.exe.bak'.\n\nBom jogo!",
+                    )
             except Exception as e:
                 messagebox.showerror("Erro ao aplicar patch", str(e))
             finally:
@@ -261,7 +271,7 @@ class BoF4PatcherGUI(tk.Tk):
 
         confirm = messagebox.askyesno(
             "Confirmar Restauração",
-            "Deseja restaurar todos os arquivos originais em inglês a partir do backup 'DAT_BACKUP_EN'?",
+            "Deseja restaurar todos os arquivos originais em inglês (DAT_BACKUP_EN e BOF4.exe.bak)?",
         )
         if not confirm:
             return
@@ -273,12 +283,20 @@ class BoF4PatcherGUI(tk.Tk):
         def run():
             try:
                 count, errors = self.patcher.restore_backup(self.progress_callback)
-                self.progress_lbl.config(text="Restauração concluída!")
-                self.progress_bar["value"] = 100
-                messagebox.showinfo(
-                    "Restaurado",
-                    f"Restauração concluída com sucesso!\n\n{count} arquivos foram revertidos para o inglês original.",
-                )
+                if errors:
+                    self.progress_lbl.config(text="Restauração concluída com erros.")
+                    messagebox.showerror(
+                        "Erro parcial ao restaurar",
+                        f"{count} arquivos restaurados, mas ocorreram {len(errors)} erro(s):\n\n"
+                        + "\n".join(errors[:10]),
+                    )
+                else:
+                    self.progress_lbl.config(text="Restauração concluída!")
+                    self.progress_bar["value"] = 100
+                    messagebox.showinfo(
+                        "Restaurado",
+                        f"Restauração concluída com sucesso!\n\n{count} arquivos (DATs e BOF4.exe) foram revertidos para o inglês original.",
+                    )
             except Exception as e:
                 messagebox.showerror("Erro ao restaurar", str(e))
             finally:
@@ -288,16 +306,19 @@ class BoF4PatcherGUI(tk.Tk):
 
     def show_credits(self):
         info = (
-            "Breath of Fire IV — Tradução para Português (PT-BR) no PC\n"
+            "Breath of Fire IV — Tradução Nativa para Português (PT-BR) no PC\n"
             f"Versão do Mod: {VERSION}\n\n"
-            "Créditos Formais:\n"
-            "• nhojunior e equipe: Autores da tradução original para PlayStation 1 (v1.1a).\n"
-            "• Mailson Maia Alves: Engenharia reversa, porte dos diálogos e arquivos DAT, adaptação de ponteiros e desenvolvimento do instalador/patcher para PC (GOG e Steam).\n"
+            "Recursos da Versão v2.0.0:\n"
+            "• Tradução nativa completa feita do zero para a versão PC (diálogos, menus, tutoriais, descrições).\n"
+            "• Fontes PC estendidas (16×16 e 24×24) com acentuação PT-BR real e métricas VWF ajustadas.\n"
+            "• Nomes originais em inglês preservados para itens, equipamentos, magias, monstros e locais.\n"
+            "• Backup automático e restauração 1-clique para DATs e BOF4.exe.\n\n"
+            "Créditos:\n"
+            "• Mailson Maia Alves: Engenharia reversa de DAT/fontes/VWF, tradução nativa PC e desenvolvimento do patcher.\n"
             "• CAPCOM Co., Ltd. & GOG.com: Desenvolvedores e publicadores do relançamento clássico no PC.\n\n"
             "Compatibilidade:\n"
             "• GOG Galaxy / Offline Installer (Windows e Linux/Steam Deck)\n"
-            "• Steam (AppID 4249150) (Windows e Proton/Steam Deck)\n"
-            "• Versão clássica de CD-ROM (2003)"
+            "• Steam (AppID 4249150) (Windows e Proton/Steam Deck)"
         )
         messagebox.showinfo("Créditos & Informações", info)
 
