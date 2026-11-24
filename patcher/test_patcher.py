@@ -38,12 +38,7 @@ class TestBoF4Patcher(unittest.TestCase):
         with open(os.path.join(self.dat_dir, "INIT.DAT"), "wb") as f:
             f.write(b"INIT_DUMMY")
 
-<<<<<<< HEAD
-        self.pkg_path = os.path.join(PATCHER_DIR, "translation_data.pkg")
-        self.patcher = BoF4Patcher(self.test_dir, pkg_path=self.pkg_path)
-=======
         self.patcher = BoF4Patcher(self.test_dir, pkg_path=str(PKG_V2_PATH))
->>>>>>> 3325f2c (feat: native PC PT-BR v2.0.0 translation, extended fonts, VWF & patcher)
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
